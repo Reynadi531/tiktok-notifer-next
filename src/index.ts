@@ -18,7 +18,7 @@ const wh = new WebhookClient(whid, whtoken)
 const db = monk(process.env.MONGO_URI)
 
 async function fetchData(username: string) {
-    const { body } = await rp({ uri: `https://www.tiktok.com/@${username}`, json: true, resolveWithFullResponse: true, gzip: true, method: 'GET' })
+    const { body } = await rp({ uri: `https://www.tiktok.com/@${username}`, json: true, resolveWithFullResponse: true, gzip: true, method: 'GET', Proxy: process.env.proxy })
     const $ = cheerio.load(body)
     // @ts-ignore
     const rawData = JSON.parse(await $('script').get().filter(a => a.attribs.id == "__NEXT_DATA__" ? true : false)[0].children[0].data)
