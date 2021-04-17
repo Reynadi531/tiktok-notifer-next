@@ -10,6 +10,7 @@
     "express": "^4.17.1",
     "monk": "^7.3.4",
     "morgan": "^1.10.0",
+    "nanoid": "^3.1.22",
     "request": "^2.88.2",
     "request-promise": "^4.2.6",
     "ts-node-dev": "^1.1.6",

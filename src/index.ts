@@ -6,11 +6,14 @@ import cheerio from 'cheerio'
 import rp from 'request-promise'
 import { WebhookClient, MessageEmbed } from 'discord.js'
 import monk from 'monk'
+import { customAlphabet } from 'nanoid'
 config()
 
 const app = express()
 app.use(cors())
 app.use(morgan('dev'))
+
+const nanoid = customAlphabet('0123456789', 17)
 
 const { whid, whtoken } = process.env
 const wh = new WebhookClient(whid, whtoken)
@@ -18,7 +21,7 @@ const wh = new WebhookClient(whid, whtoken)
 const db = monk(process.env.MONGO_URI)
 
 async function fetchData(username: string) {
-    const { body } = await rp({ uri: `https://www.tiktok.com/@${username}`, json: true, resolveWithFullResponse: true, gzip: true, method: 'GET', Proxy: process.env.proxy })
+    const { body } = await rp({ uri: `https://www.tiktok.com/@${username}`, json: true, resolveWithFullResponse: true, gzip: true, method: 'GET', followAllRedirects: false, headers: { cookie: { 'tt_webid_v2': `69${nanoid()}` } } })
     const $ = cheerio.load(body)
     // @ts-ignore
     const rawData = JSON.parse(await $('script').get().filter(a => a.attribs.id == "__NEXT_DATA__" ? true : false)[0].children[0].data)
