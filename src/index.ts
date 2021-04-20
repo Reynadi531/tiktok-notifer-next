@@ -28,24 +28,39 @@ async function fetchData(username: string) {
     return rawData.props.pageProps
 }
 
-async function sendEmbed(data: any) {
+async function sendEmbed(data: any, dataVideo: any) {
     const tiktokAvatar = data.userInfo.user.avatarLarger
-    console.log(data.items[0].video)
-    const embed = new MessageEmbed({title: 'New video is up', color: 'RANDOM', url: `${data.seoProps.metaParams.canonicalHref}/video/${data.items[0].id}`, description: data.items[0].desc}).setThumbnail(tiktokAvatar).setTimestamp().setImage(data.items[0].video.cover).addField('Link:',`[Click here](${`${data.seoProps.metaParams.canonicalHref}/video/${data.items[0].id}`})`, false)
+    console.log(dataVideo.video)
+    const embed = new MessageEmbed({title: 'New video is up', color: 'RANDOM', url: `${data.seoProps.metaParams.canonicalHref}/video/${dataVideo.id}`, description: dataVideo.desc}).setThumbnail(tiktokAvatar).setTimestamp().setImage(dataVideo.video.cover).addField('Link:',`[Click here](${`${data.seoProps.metaParams.canonicalHref}/video/${dataVideo.id}`})`, false)
     wh.send('test', {
         embeds: [embed]
     })
 }
 
-async function checker(username: string,data: any) {
+async function checker(username: string, data: any) {
     const collection = db.get(username)
     const arrayofid = (data.items).map(e => e.id)
     const dataondb = await collection.find({})
     if(dataondb.length == 0) {
-        collection.insert({ videoIds: arrayofid, username: username }).then(e => sendEmbed(data))
+        collection.insert({ videoIds: arrayofid, username: username }).then(e => sendEmbed(data, data.items[0]))
     }
-    else if(!dataondb[0].videoIds.includes(data.items[0].id)) {
-        collection.findOneAndUpdate({ username: username }, { $set: { videoIds: arrayofid } }).then(e => sendEmbed(data))
+    else {
+        let thereisnew;
+        const booleanofarray = arrayofid.map(e => {
+            return {
+                id: e,
+                new: !dataondb[0].videoIds.includes(e)
+            }
+        })
+        booleanofarray.forEach(e => {
+            if(e.new == true) {
+                sendEmbed(data, data.items.filter(a => a.id == e.id)[0])
+                thereisnew = true
+            }
+        });
+        if(thereisnew) {
+            collection.findOneAndUpdate({ username: username }, { $set: { videoIds: arrayofid } })
+        }
     }
 }
 
